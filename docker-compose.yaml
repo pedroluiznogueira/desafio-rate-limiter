@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      - RATE_LIMIT_IP=${RATE_LIMIT_IP:-10}
+      - RATE_LIMIT_TOKENS=${RATE_LIMIT_TOKENS:-abc123:100}
+      - RATE_LIMIT_BLOCK_DURATION=${RATE_LIMIT_BLOCK_DURATION:-5m}
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+
+  test:
+    build:
+      context: .
+      target: builder
+    environment:
+      - REDIS_ADDR=redis:6379
+    command: ["go", "test", "./...", "-v"]
+    depends_on:
+      - redis
